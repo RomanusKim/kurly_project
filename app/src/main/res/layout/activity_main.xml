@@ -9,6 +9,7 @@
         android:layout_height="match_parent">
 
         <androidx.core.widget.NestedScrollView
+            android:id="@+id/nestedScrollView"
             android:layout_width="match_parent"
             android:layout_height="match_parent">
 
@@ -29,7 +30,7 @@
                 <androidx.recyclerview.widget.RecyclerView
                     android:id="@+id/sectionOneRecyclerView"
                     android:layout_width="match_parent"
-                    android:layout_height="120dp"
+                    android:layout_height="wrap_content"
                     android:orientation="horizontal"/>
 
                 <!-- Section 2 -->
