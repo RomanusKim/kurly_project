@@ -4,7 +4,9 @@ import com.example.data.remote.dto.SectionResponse
 import retrofit2.http.GET
 import retrofit2.http.Query
 
-interface SectionApi {
+interface SectionApiService {
     @GET("sections")
-    suspend fun getSections(@Query("page") page: Int): List<SectionResponse>
+    suspend fun getSections(
+        @Query("page") page: Int
+    ): SectionResponse
 }

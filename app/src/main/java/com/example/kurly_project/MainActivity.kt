@@ -2,7 +2,9 @@ package com.example.kurly_project
 
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
+import androidx.activity.viewModels
 import androidx.core.widget.NestedScrollView
+import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.GridLayoutManager
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.example.domain.model.Product
@@ -10,14 +12,21 @@ import com.example.domain.model.Section
 import com.example.kurly_project.databinding.ActivityMainBinding
 import com.example.kurly_project.ui.adapter.SectionProductAdapter
 import com.example.kurly_project.ui.adapter.ViewType
+import com.example.kurly_project.viewmodel.MainViewModel
 import com.google.gson.Gson
 import com.google.gson.reflect.TypeToken
+import dagger.hilt.android.AndroidEntryPoint
+import kotlinx.coroutines.launch
 import org.json.JSONObject
 import timber.log.Timber
 
+
+@AndroidEntryPoint
 class MainActivity : AppCompatActivity() {
 
     private lateinit var binding: ActivityMainBinding
+    private val viewModel: MainViewModel by viewModels()
+
     var isLoading = false
     var currentPage = 1
 
@@ -25,32 +34,40 @@ class MainActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         binding = ActivityMainBinding.inflate(layoutInflater)
         setContentView(binding.root)
+        viewModel.loadInitialSections()
 
-        val sectionList = loadSectionListFromAssets()
-
-        sectionList.forEach { section ->
-            val product = loadProductListFromAssets(section.url)
-
-            when (section.type) {
-                "horizontal" -> {
-                    binding.sectionOneTitle.text = section.title
-                    binding.sectionOneRecyclerView.layoutManager = LinearLayoutManager(this, LinearLayoutManager.HORIZONTAL, false)
-                    binding.sectionOneRecyclerView.adapter = SectionProductAdapter(product, ViewType.HORIZONTAL)
-                }
-
-                "grid" -> {
-                    binding.sectionTwoTitle.text = section.title
-                    binding.sectionTwoRecyclerView.layoutManager = GridLayoutManager(this, 3)
-                    binding.sectionTwoRecyclerView.adapter = SectionProductAdapter(product, ViewType.GRID)
-                }
-
-                "vertical" -> {
-                    binding.sectionThreeTitle.text = section.title
-                    binding.sectionThreeRecyclerView.layoutManager = LinearLayoutManager(this, LinearLayoutManager.VERTICAL, false)
-                    binding.sectionThreeRecyclerView.adapter = SectionProductAdapter(product, ViewType.VERTICAL)
+        lifecycleScope.launch {
+            viewModel.sectionList.collect {
+                it.forEach {
+                    Timber.d("[ESES##] 제발 나와라 ${it}")
                 }
             }
         }
+//        val sectionList = loadSectionListFromAssets()
+//
+//        sectionList.forEach { section ->
+//            val product = loadProductListFromAssets(section.url)
+//
+//            when (section.type) {
+//                "horizontal" -> {
+//                    binding.sectionOneTitle.text = section.title
+//                    binding.sectionOneRecyclerView.layoutManager = LinearLayoutManager(this, LinearLayoutManager.HORIZONTAL, false)
+//                    binding.sectionOneRecyclerView.adapter = SectionProductAdapter(product, ViewType.HORIZONTAL)
+//                }
+//
+//                "grid" -> {
+//                    binding.sectionTwoTitle.text = section.title
+//                    binding.sectionTwoRecyclerView.layoutManager = GridLayoutManager(this, 3)
+//                    binding.sectionTwoRecyclerView.adapter = SectionProductAdapter(product, ViewType.GRID)
+//                }
+//
+//                "vertical" -> {
+//                    binding.sectionThreeTitle.text = section.title
+//                    binding.sectionThreeRecyclerView.layoutManager = LinearLayoutManager(this, LinearLayoutManager.VERTICAL, false)
+//                    binding.sectionThreeRecyclerView.adapter = SectionProductAdapter(product, ViewType.VERTICAL)
+//                }
+//            }
+//        }
 
     }
 

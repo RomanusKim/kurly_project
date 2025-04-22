@@ -8,6 +8,7 @@ import okhttp3.MediaType.Companion.toMediaType
 import okhttp3.Protocol
 import okhttp3.Response
 import okhttp3.ResponseBody.Companion.toResponseBody
+import timber.log.Timber
 import kotlin.random.Random
 
 class MockInterceptor(context: Context) : Interceptor {
@@ -17,7 +18,11 @@ class MockInterceptor(context: Context) : Interceptor {
     override fun intercept(chain: Interceptor.Chain): Response {
         SystemClock.sleep(Random.nextInt(1, 3) * 1000L)
 
+        val path = chain.request().url.encodedPath
+        Timber.d("[ESES##] 요청 경로: $path")
+
         val responseString = mockServer.get(chain.request())
+        Timber.d("[ESES##] 응답 여부: ${responseString != null}")
 
         return chain.proceed(chain.request())
             .newBuilder()
