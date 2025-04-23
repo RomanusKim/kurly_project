@@ -1,5 +1,6 @@
 package com.example.kurly_project.ui.adapter
 
+import android.content.Context
 import android.graphics.Paint
 import android.view.LayoutInflater
 import android.view.View
@@ -16,13 +17,16 @@ import com.bumptech.glide.load.engine.GlideException
 import com.bumptech.glide.request.RequestListener
 import com.bumptech.glide.request.target.Target
 import com.example.kurly_project.R
+import com.example.kurly_project.data.WishlistManager
 import com.example.kurly_project.model.ProductUiModel
 
 class SectionProductAdapter(
+    private val context: Context,
     private val items: MutableList<ProductUiModel>,
     private val viewType: ViewType
 ) : RecyclerView.Adapter<RecyclerView.ViewHolder>(){
 
+    private val wishlistManager = WishlistManager(context)
 
     override fun getItemViewType(position: Int): Int {
         return viewType.ordinal
@@ -110,7 +114,9 @@ class SectionProductAdapter(
                 textWishlist.setOnClickListener {
                     val position = absoluteAdapterPosition
                     if (position != RecyclerView.NO_POSITION) {
-                        product.isWished = !product.isWished
+                        val product = items[position]
+                        wishlistManager.toggleWished(product.id)
+                        product.isWished = wishlistManager.isWished(product.id)
                         notifyItemChanged(position)
                     }
                 }
@@ -150,7 +156,9 @@ class SectionProductAdapter(
                 textWishlist.setOnClickListener {
                     val position = absoluteAdapterPosition
                     if (position != RecyclerView.NO_POSITION) {
-                        product.isWished = !product.isWished
+                        val product = items[position]
+                        wishlistManager.toggleWished(product.id)
+                        product.isWished = wishlistManager.isWished(product.id)
                         notifyItemChanged(position)
                     }
                 }

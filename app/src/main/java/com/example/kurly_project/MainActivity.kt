@@ -1,6 +1,5 @@
 package com.example.kurly_project
 
-import android.content.Context
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import androidx.activity.viewModels
@@ -8,19 +7,12 @@ import androidx.core.widget.NestedScrollView
 import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.GridLayoutManager
 import androidx.recyclerview.widget.LinearLayoutManager
-import androidx.recyclerview.widget.RecyclerView
-import com.example.domain.model.Product
-import com.example.domain.model.Section
 import com.example.kurly_project.databinding.ActivityMainBinding
 import com.example.kurly_project.ui.adapter.SectionProductAdapter
 import com.example.kurly_project.ui.adapter.ViewType
 import com.example.kurly_project.viewmodel.MainViewModel
-import com.google.gson.Gson
-import com.google.gson.reflect.TypeToken
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.flow.collectLatest
-import kotlinx.coroutines.launch
-import org.json.JSONObject
 import timber.log.Timber
 
 
@@ -51,6 +43,7 @@ class MainActivity : AppCompatActivity() {
                             binding.sectionOneRecyclerView.apply {
                                 layoutManager = LinearLayoutManager(context, LinearLayoutManager.HORIZONTAL, false)
                                 adapter = SectionProductAdapter(
+                                    context = context,
                                     items = products.toMutableList(),
                                     viewType = ViewType.HORIZONTAL)
                             }
@@ -62,6 +55,7 @@ class MainActivity : AppCompatActivity() {
                                 layoutManager = GridLayoutManager(context, 3)
                                 setHasFixedSize(true)
                                 adapter = SectionProductAdapter(
+                                    context = context,
                                     items = products.toMutableList(),
                                     viewType = ViewType.GRID)
                             }
@@ -72,6 +66,7 @@ class MainActivity : AppCompatActivity() {
                             binding.sectionThreeRecyclerView.apply {
                                 layoutManager = LinearLayoutManager(context, LinearLayoutManager.VERTICAL, false)
                                 adapter = SectionProductAdapter(
+                                    context = context,
                                     items = products.toMutableList(),
                                     viewType = ViewType.VERTICAL)
                             }

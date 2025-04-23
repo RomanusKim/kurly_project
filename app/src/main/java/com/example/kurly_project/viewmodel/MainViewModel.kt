@@ -1,14 +1,16 @@
 package com.example.kurly_project.viewmodel
 
+import android.content.Context
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.domain.model.Section
 import com.example.domain.usecase.GetProductsUseCase
 import com.example.domain.usecase.GetSectionsUseCase
-import com.example.kurly_project.data.SectionWithProducts
+import com.example.kurly_project.data.WishlistManager
+import com.example.kurly_project.mapper.SectionWithProducts
 import com.example.kurly_project.mapper.toUiModel
-import com.example.kurly_project.model.ProductUiModel
 import dagger.hilt.android.lifecycle.HiltViewModel
+import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -19,6 +21,7 @@ import javax.inject.Inject
 
 @HiltViewModel
 class MainViewModel @Inject constructor(
+    @ApplicationContext private val context: Context,
     private val getSectionsUseCase: GetSectionsUseCase,
     private val getProductsUseCase: GetProductsUseCase
 ) : ViewModel() {
@@ -34,6 +37,8 @@ class MainViewModel @Inject constructor(
 
     private val _isLoading = MutableStateFlow(false)
     val isLoading: StateFlow<Boolean> = _isLoading.asStateFlow()
+
+    val wishlistManager = WishlistManager(context)
 
     /**
      * 첫 진입 시 초기화 후 첫 페이지 로드
@@ -57,7 +62,7 @@ class MainViewModel @Inject constructor(
                 else currentPage = nextPage
 
                 val enrichedSections = sections.map { section ->
-                    val products = getProductsUseCase(section.url).map { it.toUiModel() }
+                    val products = getProductsUseCase(section.url).map { it.toUiModel(wishlistManager) }
                     SectionWithProducts(section, products)
                 }
 
