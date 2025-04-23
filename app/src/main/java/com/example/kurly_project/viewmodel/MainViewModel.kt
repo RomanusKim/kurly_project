@@ -29,9 +29,6 @@ class MainViewModel @Inject constructor(
     private var currentPage = 1
     private var isLastPage = false
 
-    private val _sectionList = MutableStateFlow<List<Section>>(emptyList())
-    val sectionList: StateFlow<List<Section>> = _sectionList.asStateFlow()
-
     private val _sectionWithProducts = MutableStateFlow<List<SectionWithProducts>>(emptyList())
     val sectionWithProducts: StateFlow<List<SectionWithProducts>> = _sectionWithProducts
 
@@ -40,9 +37,6 @@ class MainViewModel @Inject constructor(
 
     val wishlistManager = WishlistManager(context)
 
-    /**
-     * 첫 진입 시 초기화 후 첫 페이지 로드
-     */
     fun loadSectionsAndProducts() {
         currentPage = 1
         isLastPage = false

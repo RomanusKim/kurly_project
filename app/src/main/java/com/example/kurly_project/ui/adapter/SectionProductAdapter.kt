@@ -7,7 +7,6 @@ import android.view.View
 import android.view.ViewGroup
 import androidx.recyclerview.widget.RecyclerView
 import com.bumptech.glide.Glide
-import com.example.domain.model.Product
 import com.example.kurly_project.databinding.ItemProductBinding
 import com.example.kurly_project.databinding.ItemProductVerticalBinding
 import timber.log.Timber
