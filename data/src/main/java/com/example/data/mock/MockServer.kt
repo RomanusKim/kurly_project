@@ -11,7 +11,15 @@ internal class MockServer constructor(
         val url = request.url
         return when (url.encodedPath) {
             "/sections" -> getSections(url.queryParameter("page")?.toIntOrNull() ?: 1)
-            "/section/products" -> getSectionProducts(url.queryParameter("sectionId")?.toIntOrNull())
+            "/section/products" -> {
+//                getSectionProducts(url.queryParameter("sectionId")?.toIntOrNull())
+                val fileName = url.queryParameter("url")
+                if (fileName != null) {
+                    fileProvider.getJsonFromAsset("section/products/$fileName.json")
+                } else {
+                    null
+                }
+            }
             else -> null
         }
     }

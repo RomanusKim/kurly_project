@@ -9,7 +9,12 @@ import com.bumptech.glide.Glide
 import com.example.domain.model.Product
 import com.example.kurly_project.databinding.ItemProductBinding
 import com.example.kurly_project.databinding.ItemProductVerticalBinding
-
+import timber.log.Timber
+import android.graphics.drawable.Drawable
+import com.bumptech.glide.load.DataSource
+import com.bumptech.glide.load.engine.GlideException
+import com.bumptech.glide.request.RequestListener
+import com.bumptech.glide.request.target.Target
 class SectionProductAdapter(
     private val items: List<Product>,
     private val viewType: ViewType
@@ -49,8 +54,34 @@ class SectionProductAdapter(
         RecyclerView.ViewHolder(binding.root) {
         fun bind(product: Product) {
             binding.apply {
+                Timber.d("[ESES##] product.image = ${product.image}")
                 textTitle.text = product.name
-                Glide.with(root).load(product.image).into(imageProduct)
+                Glide.with(binding.root)
+                    .load(product.image)
+                    .listener(object : RequestListener<Drawable> {
+                        override fun onResourceReady(
+                            resource: Drawable,
+                            model: Any,
+                            target: Target<Drawable>,
+                            dataSource: DataSource,
+                            isFirstResource: Boolean
+                        ): Boolean {
+                            Timber.d("[ESES##] 이미지 로드 성공: $model")
+                            return false
+                        }
+
+                        override fun onLoadFailed(
+                            e: GlideException?,
+                            model: Any?,
+                            target: Target<Drawable>,
+                            isFirstResource: Boolean
+                        ): Boolean {
+                            Timber.e(e, "[ESES##] 이미지 로드 실패: $model")
+                            return false
+                        }
+                    })
+                    .into(binding.imageProduct)
+
 
                 if (product.discountedPrice != null) {
                     textDiscountRate.visibility = View.VISIBLE

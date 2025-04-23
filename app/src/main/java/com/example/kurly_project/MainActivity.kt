@@ -1,5 +1,6 @@
 package com.example.kurly_project
 
+import android.content.Context
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import androidx.activity.viewModels
@@ -7,15 +8,21 @@ import androidx.core.widget.NestedScrollView
 import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.GridLayoutManager
 import androidx.recyclerview.widget.LinearLayoutManager
+import androidx.recyclerview.widget.RecyclerView
 import com.example.domain.model.Product
 import com.example.domain.model.Section
 import com.example.kurly_project.databinding.ActivityMainBinding
 import com.example.kurly_project.ui.adapter.SectionProductAdapter
 import com.example.kurly_project.ui.adapter.ViewType
 import com.example.kurly_project.viewmodel.MainViewModel
+import com.google.android.flexbox.FlexDirection
+import com.google.android.flexbox.FlexWrap
+import com.google.android.flexbox.FlexboxLayoutManager
+import com.google.android.flexbox.JustifyContent
 import com.google.gson.Gson
 import com.google.gson.reflect.TypeToken
 import dagger.hilt.android.AndroidEntryPoint
+import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
 import org.json.JSONObject
 import timber.log.Timber
@@ -27,83 +34,72 @@ class MainActivity : AppCompatActivity() {
     private lateinit var binding: ActivityMainBinding
     private val viewModel: MainViewModel by viewModels()
 
-    var isLoading = false
-    var currentPage = 1
-
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         binding = ActivityMainBinding.inflate(layoutInflater)
         setContentView(binding.root)
-        viewModel.loadInitialSections()
 
-        lifecycleScope.launch {
-            viewModel.sectionList.collect {
-                it.forEach {
-                    Timber.d("[ESES##] 제발 나와라 ${it}")
+        // ✅ 섹션 + 상품 로드
+        viewModel.loadSectionsAndProducts()
+
+        lifecycleScope.launchWhenStarted {
+            viewModel.sectionWithProducts.collect { sections ->
+                Timber.d("[ESES##] 섹션 수: ${sections.size}")
+                sections.forEach { sectionWithProducts ->
+                    val section = sectionWithProducts.section
+                    val products = sectionWithProducts.products
+
+                    when (section.type) {
+                        "horizontal" -> {
+                            binding.sectionOneTitle.text = section.title
+                            binding.sectionOneRecyclerView.apply {
+                                layoutManager = LinearLayoutManager(context, LinearLayoutManager.HORIZONTAL, false)
+                                adapter = SectionProductAdapter(products, ViewType.HORIZONTAL)
+                            }
+                        }
+
+                        "grid" -> {
+                            binding.sectionTwoTitle.text = section.title
+                            binding.sectionTwoRecyclerView.apply {
+                                layoutManager = GridLayoutManager(context, 3)
+                                setHasFixedSize(true)
+                                adapter = SectionProductAdapter(products, ViewType.GRID)
+                            }
+                        }
+
+                        "vertical" -> {
+                            binding.sectionThreeTitle.text = section.title
+                            binding.sectionThreeRecyclerView.apply {
+                                layoutManager = LinearLayoutManager(context, LinearLayoutManager.VERTICAL, false)
+                                adapter = SectionProductAdapter(products, ViewType.VERTICAL)
+                            }
+                        }
+                    }
                 }
             }
         }
-//        val sectionList = loadSectionListFromAssets()
-//
-//        sectionList.forEach { section ->
-//            val product = loadProductListFromAssets(section.url)
-//
-//            when (section.type) {
-//                "horizontal" -> {
-//                    binding.sectionOneTitle.text = section.title
-//                    binding.sectionOneRecyclerView.layoutManager = LinearLayoutManager(this, LinearLayoutManager.HORIZONTAL, false)
-//                    binding.sectionOneRecyclerView.adapter = SectionProductAdapter(product, ViewType.HORIZONTAL)
-//                }
-//
-//                "grid" -> {
-//                    binding.sectionTwoTitle.text = section.title
-//                    binding.sectionTwoRecyclerView.layoutManager = GridLayoutManager(this, 3)
-//                    binding.sectionTwoRecyclerView.adapter = SectionProductAdapter(product, ViewType.GRID)
-//                }
-//
-//                "vertical" -> {
-//                    binding.sectionThreeTitle.text = section.title
-//                    binding.sectionThreeRecyclerView.layoutManager = LinearLayoutManager(this, LinearLayoutManager.VERTICAL, false)
-//                    binding.sectionThreeRecyclerView.adapter = SectionProductAdapter(product, ViewType.VERTICAL)
-//                }
-//            }
-//        }
 
-    }
+        // ✅ 다음 페이지 로드
+        binding.nestedScrollView.setOnScrollChangeListener { v, _, scrollY, _, _ ->
+            val view = v as NestedScrollView
+            val isBottom = scrollY >= (view.getChildAt(0).measuredHeight - view.height)
 
+            if (isBottom && !viewModel.isLoading.value) {
+                Timber.d("[ESES##] 🔄 스크롤 끝 → 다음 페이지 요청")
+                viewModel.loadNextPage()
+            }
+        }
 
-    private fun loadSectionListFromAssets(): List<Section> {
-        val inputStream = assets.open("sections/sections_1.json")
-        val json = inputStream.bufferedReader().use { it.readText() }
+        // ✅ 새로고침
+        binding.layoutSwipeRefreshLayout.setOnRefreshListener {
+            Timber.d("[ESES##] 🔃 SwipeRefresh → 초기화 시작")
+            viewModel.loadSectionsAndProducts()
+        }
 
-        val jsonObject = JSONObject(json)
-        val dataArray = jsonObject.getJSONArray("data")
-
-        val gson = Gson()
-        val type = object : TypeToken<List<Section>>() {}.type
-        return gson.fromJson(dataArray.toString(), type)
-    }
-
-    private fun loadProductListFromAssets(url: String): List<Product> {
-        val inputStream = assets.open("section/products/$url.json")
-        val json = inputStream.bufferedReader().use { it.readText() }
-        val root = JSONObject(json)
-        val dataArray = root.getJSONArray("data")
-        val type = object : TypeToken<List<Product>>() {}.type
-        return Gson().fromJson(dataArray.toString(), type)
-    }
-
-    private fun setupScrollListener() {
-        binding.apply {
-            nestedScrollView.setOnScrollChangeListener { v, scrollX, scrollY, oldScrollX, oldScrollY ->
-                val view = v as NestedScrollView
-                val diff = view.getChildAt(0).bottom - (view.height + scrollY)
-
-                if (diff <= 100 && !isLoading) {
-                    isLoading = true
-                    currentPage += 1
-                    // loadNextPage()
-                }
+        // ✅ 로딩 상태 감지 후 SwipeRefresh indicator 끄기
+        lifecycleScope.launchWhenStarted {
+            viewModel.isLoading.collectLatest { loading ->
+                binding.layoutSwipeRefreshLayout.isRefreshing = loading
             }
         }
     }

@@ -5,6 +5,7 @@ import androidx.lifecycle.viewModelScope
 import com.example.domain.model.Section
 import com.example.domain.usecase.GetProductsUseCase
 import com.example.domain.usecase.GetSectionsUseCase
+import com.example.kurly_project.data.SectionWithProducts
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -26,34 +27,54 @@ class MainViewModel @Inject constructor(
     private val _sectionList = MutableStateFlow<List<Section>>(emptyList())
     val sectionList: StateFlow<List<Section>> = _sectionList.asStateFlow()
 
+    private val _sectionWithProducts = MutableStateFlow<List<SectionWithProducts>>(emptyList())
+    val sectionWithProducts: StateFlow<List<SectionWithProducts>> = _sectionWithProducts
+
     private val _isLoading = MutableStateFlow(false)
     val isLoading: StateFlow<Boolean> = _isLoading.asStateFlow()
 
-    fun loadInitialSections() {
+    /**
+     * 첫 진입 시 초기화 후 첫 페이지 로드
+     */
+    fun loadSectionsAndProducts() {
         currentPage = 1
         isLastPage = false
-        loadSections(reset = true)
+        _sectionWithProducts.value = emptyList()
+        loadNextPage()
     }
 
+    /**
+     * 페이징 처리: 마지막 페이지가 아니고, 로딩 중이 아닐 경우 다음 페이지 로드
+     */
     fun loadNextPage() {
-        if (!isLastPage && !_isLoading.value) {
-            currentPage++
-            loadSections(reset = false)
-        }
-    }
+        if (_isLoading.value || isLastPage) return
 
-    private fun loadSections(reset: Boolean) {
         viewModelScope.launch {
             _isLoading.value = true
             try {
-                val sections = getSectionsUseCase(currentPage)
-                if (sections.isEmpty()) isLastPage = true
+                // 1. 섹션 목록 + 다음 페이지 정보 가져오기
+                val (sections, nextPage) = getSectionsUseCase(currentPage)
 
-                _sectionList.update { currentList ->
-                    if (reset) sections else currentList + sections
+                // 2. 다음 페이지 갱신
+                if (nextPage == null) {
+                    isLastPage = true
+                } else {
+                    currentPage = nextPage
                 }
+
+                // 3. 각 섹션에 대응하는 상품 목록 불러오기
+                val enrichedSections = sections.map { section ->
+                    val products = getProductsUseCase(section.url)
+                    SectionWithProducts(section, products)
+                }
+
+                // 4. 누적 저장
+                _sectionWithProducts.update { prev ->
+                    prev + enrichedSections
+                }
+
             } catch (e: Exception) {
-                Timber.e(e, "[ESES##] loadSections Error ${e.localizedMessage}")
+                Timber.e(e, "[ESES##] 섹션/상품 로딩 실패: ${e.localizedMessage}")
             } finally {
                 _isLoading.value = false
             }

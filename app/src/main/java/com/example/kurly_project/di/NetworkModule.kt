@@ -60,7 +60,7 @@ object NetworkModule {
     fun provideBaseUrl(): String = "https://kurly.com/"
 
 
-    private fun createUnsafeOkHttpClient(context: Context): OkHttpClient {
+    fun createUnsafeOkHttpClient(context: Context): OkHttpClient {
         val trustAllCerts = arrayOf<TrustManager>(
             object : X509TrustManager {
                 override fun checkClientTrusted(chain: Array<out X509Certificate>?, authType: String?) {}

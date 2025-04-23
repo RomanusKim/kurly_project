@@ -1,84 +1,93 @@
 <?xml version="1.0" encoding="utf-8"?>
-<layout>
+<layout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto">
 
-    <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    <androidx.constraintlayout.widget.ConstraintLayout
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:orientation="vertical"
         android:padding="8dp">
 
-        <FrameLayout
-            android:layout_width="150dp"
-            android:layout_height="200dp">
+        <ImageView
+            android:id="@+id/imageProduct"
+            android:layout_width="0dp"
+            android:layout_height="0dp"
+            android:scaleType="centerCrop"
+            android:adjustViewBounds="true"
+            android:background="#E0E0E0"
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintDimensionRatio="3:4" />
 
-            <ImageView
-                android:id="@+id/imageProduct"
-                android:layout_width="match_parent"
-                android:layout_height="match_parent"
-                android:scaleType="centerCrop"
-                android:background="#E0E0E0" />
-
-            <TextView
-                android:id="@+id/textWishlist"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="♡"
-                android:textSize="14sp"
-                android:textColor="@android:color/white"
-                android:layout_gravity="end|top"
-                android:layout_margin="6dp"
-                android:paddingHorizontal="8dp"
-                android:paddingVertical="4dp"/>
-        </FrameLayout>
+        <TextView
+            android:id="@+id/textWishlist"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="♡"
+            android:textSize="14sp"
+            android:textColor="@android:color/white"
+            android:background="#80000000"
+            android:paddingHorizontal="8dp"
+            android:paddingVertical="4dp"
+            app:layout_constraintTop_toTopOf="@id/imageProduct"
+            app:layout_constraintEnd_toEndOf="@id/imageProduct" />
 
         <TextView
             android:id="@+id/textTitle"
             android:layout_width="150dp"
             android:layout_height="wrap_content"
-            android:text="[샐러딩] 레디믹스 스탠다드 150g"
+            android:text="상품 제목"
             android:textSize="14sp"
             android:textColor="#000000"
             android:maxLines="2"
             android:ellipsize="end"
-            android:layout_marginTop="6dp"/>
+            android:layout_marginTop="6dp"
+            app:layout_constraintTop_toBottomOf="@id/imageProduct"
+            app:layout_constraintStart_toStartOf="parent" />
 
         <LinearLayout
-            android:layout_width="match_parent"
+            android:id="@+id/priceLayout"
+            android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:orientation="horizontal"
-            android:layout_marginTop="4dp">
+            android:layout_marginTop="4dp"
+            app:layout_constraintTop_toBottomOf="@id/textTitle"
+            app:layout_constraintStart_toStartOf="parent">
 
             <TextView
                 android:id="@+id/textDiscountRate"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="30%"
+                android:text="14%"
                 android:textColor="#fa622f"
                 android:textSize="13sp"
-                android:visibility="gone"/>
+                android:visibility="gone" />
 
             <TextView
                 android:id="@+id/textSalePrice"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="6,200원"
+                android:text="6,800원"
                 android:textStyle="bold"
-                android:textSize="14sp"
                 android:textColor="#000000"
-                android:layout_marginStart="6dp"/>
+                android:textSize="14sp"
+                android:layout_marginStart="6dp" />
         </LinearLayout>
 
         <TextView
             android:id="@+id/textOriginalPrice"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="8,000원"
+            android:text="7,900원"
             android:textColor="#AAAAAA"
             android:textSize="13sp"
             android:layout_marginTop="2dp"
-            android:visibility="gone"/>
+            android:visibility="gone"
+            app:layout_constraintTop_toBottomOf="@id/priceLayout"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintBottom_toBottomOf="parent" />
 
-    </LinearLayout>
 
+    </androidx.constraintlayout.widget.ConstraintLayout>
 
 </layout>
