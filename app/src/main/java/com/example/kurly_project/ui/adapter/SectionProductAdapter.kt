@@ -15,8 +15,11 @@ import com.bumptech.glide.load.DataSource
 import com.bumptech.glide.load.engine.GlideException
 import com.bumptech.glide.request.RequestListener
 import com.bumptech.glide.request.target.Target
+import com.example.kurly_project.R
+import com.example.kurly_project.model.ProductUiModel
+
 class SectionProductAdapter(
-    private val items: List<Product>,
+    private val items: MutableList<ProductUiModel>,
     private val viewType: ViewType
 ) : RecyclerView.Adapter<RecyclerView.ViewHolder>(){
 
@@ -33,7 +36,7 @@ class SectionProductAdapter(
             }
             else -> {
                 val binding = ItemProductVerticalBinding.inflate(LayoutInflater.from(parent.context), parent, false)
-                GridViewHolder(binding)
+                VerticalViewHolder(binding)
             }
         }
     }
@@ -43,7 +46,7 @@ class SectionProductAdapter(
         val product = items[position]
         when (holder) {
             is HorizontalViewHolder -> holder.bind(product)
-            is GridViewHolder -> holder.bind(product)
+            is VerticalViewHolder -> holder.bind(product)
         }
     }
 
@@ -52,7 +55,7 @@ class SectionProductAdapter(
 
     inner class HorizontalViewHolder(private val binding: ItemProductBinding) :
         RecyclerView.ViewHolder(binding.root) {
-        fun bind(product: Product) {
+        fun bind(product: ProductUiModel) {
             binding.apply {
                 Timber.d("[ESES##] product.image = ${product.image}")
                 textTitle.text = product.name
@@ -98,16 +101,61 @@ class SectionProductAdapter(
                     textOriginalPrice.visibility = View.GONE
                     binding.textSalePrice.text = "${product.originalPrice}원"
                 }
+
+                textWishlist.setBackgroundResource(
+                    if (product.isWished) R.drawable.ic_btn_heart_on
+                    else R.drawable.ic_btn_heart_off
+                )
+
+                textWishlist.setOnClickListener {
+                    val position = absoluteAdapterPosition
+                    if (position != RecyclerView.NO_POSITION) {
+                        product.isWished = !product.isWished
+                        notifyItemChanged(position)
+                    }
+                }
             }
         }
     }
 
-    inner class GridViewHolder(private val binding: ItemProductVerticalBinding) :
+    inner class VerticalViewHolder(private val binding: ItemProductVerticalBinding) :
         RecyclerView.ViewHolder(binding.root) {
-        fun bind(product: Product) {
+        fun bind(product: ProductUiModel) {
             binding.textTitle.text = product.name
             Glide.with(binding.root).load(product.image).into(binding.imageProduct)
-            // 다른 UI 표현 방식도 여기서 다르게 처리
+
+            binding.apply {
+
+                if (product.discountedPrice != null) {
+                    textDiscountRate.visibility = View.VISIBLE
+                    val discountRate = 100 - (product.discountedPrice!! * 100 / product.originalPrice)
+                    textDiscountRate.text = "$discountRate%"
+                    textSalePrice.text = "${product.discountedPrice}원"
+                    textOriginalPrice.apply {
+                        visibility = View.VISIBLE
+                        text = "${product.originalPrice}원"
+                        paintFlags = paintFlags or Paint.STRIKE_THRU_TEXT_FLAG
+                    }
+                } else {
+                    textDiscountRate.visibility = View.GONE
+                    textOriginalPrice.visibility = View.GONE
+                    binding.textSalePrice.text = "${product.originalPrice}원"
+                }
+
+                textWishlist.setBackgroundResource(
+                    if (product.isWished) R.drawable.ic_btn_heart_on
+                    else R.drawable.ic_btn_heart_off
+                )
+
+                textWishlist.setOnClickListener {
+                    val position = absoluteAdapterPosition
+                    if (position != RecyclerView.NO_POSITION) {
+                        product.isWished = !product.isWished
+                        notifyItemChanged(position)
+                    }
+                }
+
+            }
         }
     }
 }

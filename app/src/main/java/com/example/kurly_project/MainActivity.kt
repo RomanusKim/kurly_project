@@ -15,10 +15,6 @@ import com.example.kurly_project.databinding.ActivityMainBinding
 import com.example.kurly_project.ui.adapter.SectionProductAdapter
 import com.example.kurly_project.ui.adapter.ViewType
 import com.example.kurly_project.viewmodel.MainViewModel
-import com.google.android.flexbox.FlexDirection
-import com.google.android.flexbox.FlexWrap
-import com.google.android.flexbox.FlexboxLayoutManager
-import com.google.android.flexbox.JustifyContent
 import com.google.gson.Gson
 import com.google.gson.reflect.TypeToken
 import dagger.hilt.android.AndroidEntryPoint
@@ -54,7 +50,9 @@ class MainActivity : AppCompatActivity() {
                             binding.sectionOneTitle.text = section.title
                             binding.sectionOneRecyclerView.apply {
                                 layoutManager = LinearLayoutManager(context, LinearLayoutManager.HORIZONTAL, false)
-                                adapter = SectionProductAdapter(products, ViewType.HORIZONTAL)
+                                adapter = SectionProductAdapter(
+                                    items = products.toMutableList(),
+                                    viewType = ViewType.HORIZONTAL)
                             }
                         }
 
@@ -63,7 +61,9 @@ class MainActivity : AppCompatActivity() {
                             binding.sectionTwoRecyclerView.apply {
                                 layoutManager = GridLayoutManager(context, 3)
                                 setHasFixedSize(true)
-                                adapter = SectionProductAdapter(products, ViewType.GRID)
+                                adapter = SectionProductAdapter(
+                                    items = products.toMutableList(),
+                                    viewType = ViewType.GRID)
                             }
                         }
 
@@ -71,7 +71,9 @@ class MainActivity : AppCompatActivity() {
                             binding.sectionThreeTitle.text = section.title
                             binding.sectionThreeRecyclerView.apply {
                                 layoutManager = LinearLayoutManager(context, LinearLayoutManager.VERTICAL, false)
-                                adapter = SectionProductAdapter(products, ViewType.VERTICAL)
+                                adapter = SectionProductAdapter(
+                                    items = products.toMutableList(),
+                                    viewType = ViewType.VERTICAL)
                             }
                         }
                     }
